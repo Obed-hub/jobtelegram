@@ -33,7 +33,7 @@ exports.verifyPayment = functions.https.onCall(async (data, context) => {
   try {
     // 2. Secret Key (Should ideally be in config/secrets)
     // For now using the provided key directly or via env
-    const SECRET_KEY = process.env.FLUTTERWAVE_SECRET_KEY || 'FLWSECK-423831d117048c3d002a5a4b95c496ae-19d4836888bvt-X';
+    const SECRET_KEY = process.env.FLUTTERWAVE_SECRET_KEY;
 
     // 3. Verify with Flutterwave
     const response = await axios.get(
