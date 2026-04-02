@@ -36,7 +36,7 @@ export function UpgradeModal({ isOpen, onOpenChange, reason }: UpgradeModalProps
       name: user?.displayName || profile?.role || 'Premium User',
     },
     customizations: {
-      title: 'Matchmaker Premium',
+      title: 'GigSpark Premium',
       description: 'Unlock Unlimited Swipes & AI Tailoring',
       logo: 'https://st2.depositphotos.com/6789684/12262/v/450/depositphotos_122620864-stock-illustration-illustration-of-flat-icon.jpg',
     },
@@ -121,7 +121,7 @@ export function UpgradeModal({ isOpen, onOpenChange, reason }: UpgradeModalProps
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-semibold">Priority Matchmaker AI</p>
+                  <p className="font-semibold">Priority GigSpark AI</p>
                   <p className="text-sm text-muted-foreground">Get placed at the front of the queue for the freshest job algorithms.</p>
                 </div>
               </div>

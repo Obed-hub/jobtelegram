@@ -213,7 +213,7 @@ const platforms: Platform[] = [
     instructions: [
       'Apply as Community Manager',
       'Pass Web3 knowledge test',
-      'Engage in Discord/Telegram'
+      'Engage in Discord communities'
     ],
     advice: [
       'Specialized in Web3 communities',

@@ -50,7 +50,7 @@ export function UpgradeCard({ className = '', title, description }: UpgradeCardP
               <Lock className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <h3 className="font-bold text-lg">{title || 'Unlock Matchmaker Pro'}</h3>
+              <h3 className="font-bold text-lg">{title || 'Unlock GigSpark Pro'}</h3>
               <p className="text-xs text-muted-foreground">{description || 'Get the ultimate job search advantage'}</p>
             </div>
           </div>

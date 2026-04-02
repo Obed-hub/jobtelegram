@@ -154,3 +154,9 @@ export function extractBioSignals(bio: string): string[] {
 
   return [...new Set(signals)];
 }
+
+export const COMMON_LOCATIONS = [
+  'Remote', 'Worldwide', 'USA', 'Europe', 'UK', 'Canada', 
+  'Germany', 'Netherlands', 'Nigeria', 'Lagos', 'London', 
+  'New York', 'San Francisco', 'Berlin', 'Asia', 'Africa', 'Latin America'
+].sort();

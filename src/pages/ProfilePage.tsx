@@ -1,7 +1,7 @@
 import React from 'react';
 import { useApp } from '@/context/AppContext';
 import { UserProfile, ScoreWeights, DEFAULT_WEIGHTS } from '@/types/job';
-import { generateKeywordsFromRole, extractBioSignals, ALL_SUGGESTED_ROLES } from '@/lib/keywords';
+import { generateKeywordsFromRole, extractBioSignals, ALL_SUGGESTED_ROLES, COMMON_LOCATIONS } from '@/lib/keywords';
 import { generateProfileSuggestions } from '@/lib/ai';
 import { extractTextFromPdf } from '@/lib/pdf-parser';
 import { matchJobs } from '@/lib/matching';
@@ -17,6 +17,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { UpgradeModal } from '@/components/UpgradeModal';
 import { UpgradeCard } from '@/components/UpgradeCard';
+import { AuthForm } from '@/components/AuthForm';
 import { Lock } from 'lucide-react';
 
 const experienceLevels = ['junior', 'mid', 'senior'] as const;
@@ -319,20 +320,7 @@ export default function ProfilePage() {
           <div className="absolute top-0 right-0 w-32 h-32 gradient-bg opacity-10 blur-3xl -mr-16 -mt-16 rounded-full" />
           
           {!user ? (
-            <div className="flex flex-col items-center text-center py-2">
-              <div className="w-16 h-16 rounded-2xl overflow-hidden ring-2 ring-primary/20 mb-3 shadow-lg">
-                <img src={userAvatarUrl} alt="Random Avatar" className="w-full h-full object-cover" />
-              </div>
-              <h2 className="text-lg font-bold mb-1">Sign in to save progress</h2>
-              <p className="text-xs text-muted-foreground mb-4">Keep your profile and matches across all devices</p>
-              <button
-                onClick={loginWithGoogle}
-                className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-foreground text-background font-semibold text-sm hover:opacity-90 transition-opacity"
-              >
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-4 h-4" alt="Google" />
-                Continue with Google
-              </button>
-            </div>
+            <AuthForm />
           ) : (
             <div className="flex items-center gap-4">
               <div className="relative">
@@ -570,6 +558,20 @@ export default function ProfilePage() {
               placeholder="e.g. remote, europe, us"
               colorClass="bg-primary/15 text-primary"
             />
+            <div className="mt-3">
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2 opacity-70">Quick add:</p>
+              <div className="flex flex-wrap gap-2">
+                {COMMON_LOCATIONS.filter(loc => !locationPrefs.includes(loc)).map(loc => (
+                  <button
+                    key={loc}
+                    onClick={() => setLocationPrefs(prev => [...prev, loc])}
+                    className="px-3 py-1 rounded-full border border-border bg-background text-[10px] font-semibold text-muted-foreground hover:border-primary hover:text-primary hover:bg-primary/5 transition-all"
+                  >
+                    + {loc}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
 
           {/* 10. Short Bio */}

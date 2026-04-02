@@ -54,7 +54,7 @@ export default function DiscoverPage() {
           <div className="w-20 h-20 rounded-2xl gradient-bg flex items-center justify-center text-3xl mb-6 mx-auto glow">
             <Sparkles className="w-10 h-10 text-primary-foreground" />
           </div>
-          <h1 className="text-3xl font-bold mb-3 gradient-text">Welcome to JobMatch</h1>
+          <h1 className="text-3xl font-bold mb-3 gradient-text">Welcome to GigSpark</h1>
           <p className="text-muted-foreground text-lg max-w-sm mx-auto">
             Set up your profile to discover AI-matched opportunities tailored just for you.
           </p>

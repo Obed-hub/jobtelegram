@@ -6,7 +6,10 @@ import { matchJobs } from '@/lib/matching';
 import { aggregateJobs, AggregationResult } from '@/lib/sources/aggregator';
 import { normalizedToJob } from '@/lib/sources/bridge';
 import { auth, googleProvider, db } from '@/lib/firebase';
-import { onAuthStateChanged, signInWithPopup, signOut, User } from 'firebase/auth';
+import { 
+  onAuthStateChanged, signInWithPopup, signOut, User, 
+  createUserWithEmailAndPassword, signInWithEmailAndPassword 
+} from 'firebase/auth';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { toast } from 'sonner';
 import { LIMITS, LimitAction } from '@/config/limits';
@@ -14,6 +17,8 @@ import { LIMITS, LimitAction } from '@/config/limits';
 interface AppState {
   user: User | null;
   loginWithGoogle: () => Promise<void>;
+  loginWithEmail: (email: string, pass: string) => Promise<void>;
+  signUpWithEmail: (email: string, pass: string) => Promise<void>;
   logout: () => Promise<void>;
   profile: UserProfile | null;
   matchedJobs: MatchedJob[];
@@ -183,6 +188,27 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     return () => unsubscribe();
   }, [persist]);
+
+  const loginWithEmail = async (email: string, pass: string) => {
+    try {
+      await signInWithEmailAndPassword(auth, email, pass);
+    } catch (error: any) {
+      console.error('Login error:', error);
+      toast.error(error.message || 'Failed to log in with email');
+      throw error;
+    }
+  };
+
+  const signUpWithEmail = async (email: string, pass: string) => {
+    try {
+      await createUserWithEmailAndPassword(auth, email, pass);
+      toast.success('Account created! Welcome to GigSpark.');
+    } catch (error: any) {
+      console.error('Signup error:', error);
+      toast.error(error.message || 'Failed to create account');
+      throw error;
+    }
+  };
 
   const loginWithGoogle = async () => {
     try {
@@ -403,6 +429,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     <AppContext.Provider value={{
       user,
       loginWithGoogle,
+      loginWithEmail,
+      signUpWithEmail,
       logout,
       profile,
       matchedJobs: filteredJobs,
