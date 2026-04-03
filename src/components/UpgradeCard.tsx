@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, CheckCircle2, ChevronRight, Lock, Zap, Gauge, Globe } from 'lucide-react';
+import { Sparkles, CheckCircle2, ChevronRight, Lock, Zap, Gauge, Globe, ShieldCheck } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { LIMITS } from '@/config/limits';
 import { UpgradeModal } from './UpgradeModal';
@@ -36,14 +36,14 @@ export function UpgradeCard({ className = '', title, description }: UpgradeCardP
     { icon: <Zap className="w-4 h-4 text-primary" />, label: 'Unlimited Swipes', desc: `Beyond 3 jobs/day` },
     { icon: <Sparkles className="w-4 h-4 text-purple-500" />, label: 'AI CV Tailoring', desc: 'Perfect fits every time' },
     { icon: <Globe className="w-4 h-4 text-accent" />, label: 'Hidden Gigs', desc: '50+ exclusive networks' },
-    { icon: <Gauge className="w-4 h-4 text-success" />, label: 'Priority Support', desc: 'Instant AI response' },
+    { icon: <ShieldCheck className="w-4 h-4 text-success" />, label: 'Private Jobs', desc: 'Exclusive hidden roles' },
   ];
 
   return (
     <>
       <div className={`glass-card rounded-2xl p-6 border-primary/30 bg-gradient-to-br from-primary/5 via-background to-accent/5 relative overflow-hidden group hover:border-primary/50 transition-all duration-500 ${className}`}>
         <div className="absolute top-0 right-0 w-48 h-48 bg-primary/10 blur-3xl -mr-24 -mt-24 rounded-full group-hover:bg-primary/20 transition-colors" />
-        
+
         <div className="relative">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center glow">
@@ -79,17 +79,17 @@ export function UpgradeCard({ className = '', title, description }: UpgradeCardP
               <ChevronRight className="w-4 h-4 text-white opacity-70 group-hover/btn:opacity-100 group-hover/btn:translate-x-0.5 transition-all" />
             </div>
           </button>
-          
+
           <p className="text-[10px] text-center text-muted-foreground mt-3 italic opacity-70">
-            Billed monthly. Cancel anytime.
+            Billed monthly. Cancel anytime (powered by flutterwave).
           </p>
         </div>
       </div>
 
-      <UpgradeModal 
-        isOpen={showUpgradeModal} 
-        onOpenChange={setShowUpgradeModal} 
-        reason="jobs" 
+      <UpgradeModal
+        isOpen={showUpgradeModal}
+        onOpenChange={setShowUpgradeModal}
+        reason="jobs"
       />
     </>
   );

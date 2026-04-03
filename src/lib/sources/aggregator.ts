@@ -103,7 +103,15 @@ export async function aggregateJobs(
 
   // Fallback to mock if nothing came through
   if (allJobs.length === 0 && useMockFallback) {
-    console.warn('[Aggregator] All sources failed, using mock data');
+    const hasErrors = syncLogs.some(log => log.errors.length > 0);
+    if (hasErrors) {
+      console.warn('[Aggregator] All live sources failed. Using mock data as fallback.');
+      console.warn('[Aggregator] Tip: If this is in production, ensure Netlify/Vercel proxies are configured for /api/* routes.');
+      console.warn('[Aggregator] Tip: If this is local, check your internet connection or if the APIs are blocking the requests.');
+    } else {
+      console.info('[Aggregator] No jobs found from any live source. Using mock data.');
+    }
+    
     const mockJobs = await mockAdapter.fetchJobs({ profile });
     allJobs.push(...mockJobs);
     syncLogs.push({

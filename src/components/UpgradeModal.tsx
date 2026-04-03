@@ -8,7 +8,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { useApp } from '@/context/AppContext';
-import { Sparkles, CheckCircle2, ChevronRight, Lock, Loader2, Globe } from 'lucide-react';
+import { Sparkles, CheckCircle2, ChevronRight, Lock, Loader2, Globe, ShieldCheck } from 'lucide-react';
 import { LIMITS } from '@/config/limits';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '@/lib/firebase';
@@ -119,10 +119,10 @@ export function UpgradeModal({ isOpen, onOpenChange, reason }: UpgradeModalProps
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                <ShieldCheck className="w-5 h-5 text-primary shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-semibold">Priority GigSpark AI</p>
-                  <p className="text-sm text-muted-foreground">Get placed at the front of the queue for the freshest job algorithms.</p>
+                  <p className="font-semibold">Premium & Private Jobs</p>
+                  <p className="text-sm text-muted-foreground">Access exclusive hidden job listings not available to public users.</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">

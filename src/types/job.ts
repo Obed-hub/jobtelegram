@@ -59,6 +59,7 @@ export interface Job {
   requirements: string[];
   source?: string;
   dedupe_hash?: string;
+  isPremium?: boolean;
 }
 
 export type MatchLabel = 'strong' | 'good' | 'partial' | 'weak';

@@ -14,6 +14,7 @@ export const mockJobs: Job[] = [
     logo: '🎵',
     posted: '2 days ago',
     requirements: ['5+ years frontend experience', 'Strong React & TypeScript', 'Experience with design systems', 'Performance optimization expertise'],
+    isPremium: true,
   },
   {
     id: '2',
@@ -28,6 +29,7 @@ export const mockJobs: Job[] = [
     logo: '▲',
     posted: '1 day ago',
     requirements: ['4+ years full stack experience', 'Deep Next.js knowledge', 'API design experience', 'Open source contributions a plus'],
+    isPremium: true,
   },
   {
     id: '3',
@@ -56,6 +58,7 @@ export const mockJobs: Job[] = [
     logo: '💳',
     posted: '5 days ago',
     requirements: ['5+ years backend experience', 'Distributed systems knowledge', 'Financial systems experience', 'Strong testing practices'],
+    isPremium: true,
   },
   {
     id: '5',
@@ -140,6 +143,7 @@ export const mockJobs: Job[] = [
     logo: '🤖',
     posted: '1 day ago',
     requirements: ['4+ years frontend experience', 'AI/ML product experience', 'Real-time data visualization', 'Strong design sensibility'],
+    isPremium: true,
   },
   {
     id: '11',

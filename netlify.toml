@@ -5,3 +5,50 @@
 [build.environment]
   NODE_VERSION = "20"
   SECRETS_SCAN_OMIT_KEYS = "VITE_FIREBASE_API_KEY,VITE_FIREBASE_PROJECT_ID,VITE_FIREBASE_AUTH_DOMAIN,VITE_FIREBASE_STORAGE_BUCKET,VITE_FIREBASE_MESSAGING_SENDER_ID,VITE_FIREBASE_APP_ID,VITE_FLUTTERWAVE_PUBLIC_KEY,VITE_GROQ_API_KEY,VITE_GEMINI_API_KEY,VITE_ADZUNA_APP_ID,VITE_ADZUNA_APP_KEY"
+
+[[redirects]]
+  from = "/api/remotive/*"
+  to = "https://remotive.com/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/arbeitnow/*"
+  to = "https://www.arbeitnow.com/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/remoteok/*"
+  to = "https://remoteok.com/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/greenhouse/*"
+  to = "https://boards-api.greenhouse.io/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/lever/*"
+  to = "https://api.lever.co/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/hn/*"
+  to = "https://hn.algolia.com/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/adzuna/*"
+  to = "https://api.adzuna.com/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

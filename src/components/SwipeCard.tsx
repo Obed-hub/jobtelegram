@@ -4,7 +4,7 @@ import { MatchedJob } from '@/types/job';
 import { MatchScoreBar } from './MatchScoreBar';
 import { SkillBadge } from './SkillBadge';
 import { MatchExplanation } from './MatchExplanation';
-import { Sparkles, MapPin, Banknote, Building2 } from 'lucide-react';
+import { Sparkles, MapPin, Banknote, Building2, ShieldCheck } from 'lucide-react';
 
 interface SwipeCardProps {
   job: MatchedJob;
@@ -41,6 +41,12 @@ export const SwipeCard = forwardRef<HTMLDivElement, SwipeCardProps>(
               </div>
               <div className="flex items-center gap-2">
                 <MatchExplanation job={job} compact />
+                {job.isPremium && (
+                  <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30">
+                    <ShieldCheck className="w-3 h-3 text-amber-500" />
+                    <span className="text-[10px] font-bold text-amber-600 uppercase tracking-tight">Premium Match</span>
+                  </div>
+                )}
                 <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20">
                   <Sparkles className="w-3.5 h-3.5 text-primary" />
                   <span className="text-sm font-semibold text-primary">{job.matchScore}%</span>

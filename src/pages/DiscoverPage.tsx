@@ -7,7 +7,7 @@ import { UpgradeModal } from '@/components/UpgradeModal';
 import { UpgradeCard } from '@/components/UpgradeCard';
 import { useNavigate } from 'react-router-dom';
 import { BonusPlatforms } from '@/components/BonusPlatforms';
-import { CheckCircle2, X, Heart, ExternalLink, Sparkles, ThumbsUp, ThumbsDown, RefreshCw, Globe, Share2 } from 'lucide-react';
+import { CheckCircle2, X, Heart, ExternalLink, Sparkles, ThumbsUp, ThumbsDown, RefreshCw, Globe, Share2, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { LIMITS } from '@/config/limits';
 
@@ -142,6 +142,12 @@ export default function DiscoverPage() {
             <Sparkles className="w-3 h-3 text-primary" />
             <span className="text-xs font-semibold text-primary">AI Matched</span>
           </div>
+          {profile?.isPremium && (
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20">
+              <ShieldCheck className="w-3 h-3 text-amber-500" />
+              <span className="text-xs font-semibold text-amber-600">Premium Feed</span>
+            </div>
+          )}
         </div>
       </div>
       
