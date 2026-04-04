@@ -30,14 +30,15 @@ function primaryRoleMatch(
   jobDescription: string
 ): number {
   if (primaryKeywords.length === 0) return 0;
-
+  const individualScores: number[] = [];
   const normTitle = normalizeText(jobTitle);
   const normDesc = normalizeText(jobDescription);
-  let titleMatches = 0;
-  let descOnlyMatches = 0;
 
   for (const keyword of primaryKeywords) {
     const normKw = normalizeText(keyword);
+    let titleMatches = 0;
+    let descOnlyMatches = 0;
+
     // Exact phrase match in title is highest priority
     if (normTitle.includes(normKw)) {
       titleMatches++;
@@ -54,11 +55,14 @@ function primaryRoleMatch(
         descOnlyMatches++;
       }
     }
+    
+    // Title matches worth more than description-only matches
+    const score = (titleMatches * 3 + descOnlyMatches) / 3;
+    individualScores.push(Math.min(1, score));
   }
 
-  // Title matches worth 3x more than description-only matches
-  const weightedScore = (titleMatches * 3 + descOnlyMatches) / (primaryKeywords.length * 3);
-  return Math.min(1, weightedScore);
+  // Return the best match among all primary keywords
+  return Math.max(0, ...individualScores);
 }
 
 function experienceMatch(userLevel: string, userYears: number, jobTitle: string): number {
@@ -90,10 +94,15 @@ function workTypeMatch(userTypes: string[], jobType: string): number {
 function locationMatch(userLocations: string[], jobLocation: string): number {
   if (userLocations.length === 0) return 0.5;
   const normJob = jobLocation.toLowerCase();
+  const remoteKeywords = ['remote', 'global', 'worldwide', 'anywhere', 'distributed'];
+  const isRemoteFriendlyJob = remoteKeywords.some(k => normJob.includes(k));
 
-  if (userLocations.some(l => l.toLowerCase() === 'remote') &&
-    (normJob.includes('remote') || normJob.includes('global'))) return 1;
-  if (normJob.includes('remote') || normJob.includes('global')) return 0.9;
+  if (userLocations.some(l => {
+    const normL = l.toLowerCase();
+    return remoteKeywords.includes(normL);
+  }) && isRemoteFriendlyJob) return 1;
+  
+  if (isRemoteFriendlyJob) return 0.9;
 
   for (const loc of userLocations) {
     if (normJob.includes(loc.toLowerCase())) return 1;
@@ -238,6 +247,18 @@ export function matchJobs(profile: UserProfile, jobs: Job[]): MatchedJob[] {
       profile.primaryKeywords, job.title, job.description
     );
 
+    // Hard filter on Work Type if specific types are selected
+    if (profile.workTypes.length > 0) {
+      const jobTypesMatched = profile.workTypes.includes(job.type);
+      const isFreelanceContractOverlap = (profile.workTypes.includes('freelance') && job.type === 'contract') || 
+                                         (profile.workTypes.includes('contract') && job.type === 'freelance');
+      const isRemoteWorkTypeButLocationPhysical = profile.workTypes.includes('remote') && job.type !== 'remote';
+      
+      if (!jobTypesMatched && !isFreelanceContractOverlap) {
+        continue; // Strictly filter out non-matching work types
+      }
+    }
+
     // Skill matching (separate core and optional)
     const { matched: coreMatched, missing: coreMissing } = skillsOverlap(
       profile.coreSkills, job.skills, synonymMap
@@ -246,19 +267,25 @@ export function matchJobs(profile: UserProfile, jobs: Job[]): MatchedJob[] {
       profile.optionalSkills, job.skills, synonymMap
     );
 
-    const coreSkillScore = profile.coreSkills.length > 0
-      ? coreMatched.length / Math.max(profile.coreSkills.length, job.skills.length)
-      : 0;
-    const optSkillScore = profile.optionalSkills.length > 0
-      ? optMatched.length / Math.max(profile.optionalSkills.length, job.skills.length)
-      : 0;
+    const lScore = locationMatch(profile.locationPreferences, job.location);
+
+    // Hard filter on Location if specific preferences are set
+    if (profile.locationPreferences.length > 0 && lScore < 0.5) {
+      continue; // Strictly filter out non-matching locations
+    }
+
+    const coreSkillScore = job.skills.length > 0
+      ? coreMatched.length / job.skills.length
+      : 0.5; // Neutral if no skills listed
+    const optSkillScore = job.skills.length > 0
+      ? optMatched.length / job.skills.length
+      : 0.5;
 
     // Must have some relevance signal
     if (prScore === 0 && coreMatched.length === 0 && optMatched.length === 0) continue;
 
-    const eScore = experienceMatch(profile.experience_level, profile.years, job.title);
     const wtScore = workTypeMatch(profile.workTypes, job.type);
-    const lScore = locationMatch(profile.locationPreferences, job.location);
+    const eScore = experienceMatch(profile.experience_level, profile.years, job.title);
     const rScore = recencyScore(job.posted);
 
     const totalScore = Math.round(

@@ -17,7 +17,13 @@ export function normalizedToJob(nj: NormalizedJob): Job {
     salary: nj.salary_display || '',
     description: nj.description,
     skills: nj.skills_inferred.length > 0 ? nj.skills_inferred : nj.tags,
-    type: nj.work_type === 'unknown' ? 'remote' : nj.work_type as Job['type'],
+    type: (() => {
+      if (nj.work_type !== 'unknown') return nj.work_type as Job['type'];
+      const loc = nj.location.toLowerCase();
+      const remoteKeywords = ['remote', 'anywhere', 'global', 'remote-first', 'flexible location', 'distributed'];
+      if (remoteKeywords.some(k => loc.includes(k))) return 'remote';
+      return 'full-time'; // Default to full-time if a physical location is present without remote keywords
+    })(),
     apply_url: nj.url,
     logo: nj.logo || getSourceEmoji(nj.source),
     posted,

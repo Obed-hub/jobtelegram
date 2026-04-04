@@ -38,7 +38,13 @@ const AdminPage: React.FC = () => {
     const unsubscribeUsers = onSnapshot(usersQuery, (snapshot) => {
       const usersList: { id: string; profile: UserProfile }[] = [];
       snapshot.forEach((doc) => {
-        usersList.push({ id: doc.id, profile: doc.data().profile });
+        const data = doc.data();
+        if (data && data.profile) {
+          usersList.push({ id: doc.id, profile: data.profile });
+        } else {
+          // Add a placeholder profile so they still show up in the list
+          usersList.push({ id: doc.id, profile: { role: 'Incomplete' } as any });
+        }
       });
       setUsers(usersList);
     }, (err) => {
@@ -230,16 +236,16 @@ const AdminPage: React.FC = () => {
                     filteredUsers.map((u) => (
                       <TableRow key={u.id}>
                         <TableCell className="font-mono text-xs">{u.id.substring(0, 10)}...</TableCell>
-                        <TableCell>{u.profile.role || 'New User'}</TableCell>
+                        <TableCell>{u.profile?.role || 'New User'}</TableCell>
                         <TableCell>
-                          {u.profile.isPremium ? (
+                          {u.profile?.isPremium ? (
                             <Badge variant="default" className="bg-amber-500">Premium</Badge>
                           ) : (
                             <Badge variant="outline">Free</Badge>
                           )}
                         </TableCell>
                         <TableCell className="text-xs text-muted-foreground italic">
-                          {u.profile.lastActivityDate || 'Never'}
+                          {u.profile?.lastActivityDate || 'Never'}
                         </TableCell>
                         <TableCell className="text-right">
                           <Button 

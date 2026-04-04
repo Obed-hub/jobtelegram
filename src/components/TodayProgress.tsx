@@ -15,18 +15,24 @@ export function TodayProgress({ profile, onUpgrade, className }: TodayProgressPr
 
   const progressItems = [
     {
-      label: `Found ${profile.dailyJobsSwiped || 3} remote jobs that match your role `,
-      done: (profile.dailyJobsSwiped || 0) > 0,
+      label: isPremium 
+        ? `Found 20+ remote jobs that match your role `
+        : `Found ${profile.dailyJobsSwiped || 3} remote jobs that match your role `,
+      done: isPremium || (profile.dailyJobsSwiped || 0) > 0,
       icon: CheckCircle2
     },
     {
-      label: `Generated ${profile.dailyCvFits || 0} CV`,
-      done: (profile.dailyCvFits || 0) > 0,
+      label: isPremium
+        ? `Unlimited CV optimizations`
+        : `Generated ${profile.dailyCvFits || 0} CV`,
+      done: isPremium || (profile.dailyCvFits || 0) > 0,
       icon: CheckCircle2
     },
     {
-      label: `Created ${profile.dailyAiAnalysisCount || 0} cover letter`,
-      done: (profile.dailyAiAnalysisCount || 0) > 0,
+      label: isPremium
+        ? `Unlimited cover letters`
+        : `Created ${profile.dailyAiAnalysisCount || 0} cover letter`,
+      done: isPremium || (profile.dailyAiAnalysisCount || 0) > 0,
       icon: CheckCircle2
     },
   ];
