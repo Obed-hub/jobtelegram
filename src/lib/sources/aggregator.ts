@@ -53,7 +53,7 @@ export async function aggregateJobs(
     profile?: UserProfile;
   } = {}
 ): Promise<AggregationResult> {
-  const { useMockFallback = true, sources, profile } = options;
+  const { useMockFallback = false, sources, profile } = options;
   const adapters = getAllAdapters().filter(
     a => !sources || sources.includes(a.source)
   );

@@ -7,7 +7,7 @@ import { MatchScoreBar } from '@/components/MatchScoreBar';
 import { SkillBadge } from '@/components/SkillBadge';
 import { UpgradeModal } from '@/components/UpgradeModal';
 import { ArrowLeft, Sparkles, MapPin, Banknote, Building2, ExternalLink, FileText, MessageSquare, Wrench, BookOpen, ThumbsUp, ThumbsDown, Download, Share2 } from 'lucide-react';
-import { mockJobs } from '@/data/mockJobs';
+// Removed: import { mockJobs } from '@/data/mockJobs';
 import { matchJobs } from '@/lib/matching';
 import { toast } from 'sonner';
 import { useState, useEffect, useRef } from 'react';
@@ -39,10 +39,11 @@ export default function JobDetailsPage() {
     || allMatchedJobs.find(j => j.id === id)
     || savedJobs.find(s => s.job.id === id)?.job;
 
-  if (!job && profile) {
-    const all = matchJobs(profile, mockJobs);
-    job = all.find(j => j.id === id);
-  }
+  // Removed mock fallback
+  // if (!job && profile) {
+  //   const all = matchJobs(profile, mockJobs);
+  //   job = all.find(j => j.id === id);
+  // }
 
   if (!job) {
     return (

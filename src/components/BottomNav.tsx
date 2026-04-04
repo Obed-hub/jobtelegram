@@ -1,7 +1,8 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Compass, Bookmark, Briefcase, BarChart2, User } from 'lucide-react';
+import { Compass, Bookmark, Briefcase, BarChart2, User, ShieldCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useApp } from '@/context/AppContext';
+import { isUserAdmin } from '@/config/admin';
 
 const navItems = [
   { path: '/', icon: Compass, label: 'Discover' },
@@ -14,12 +15,17 @@ const navItems = [
 export function BottomNav() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { savedJobs } = useApp();
+  const { savedJobs, profile, user } = useApp();
+
+  const items = [...navItems];
+  if (profile?.isAdmin || isUserAdmin(user?.uid)) {
+    items.push({ path: '/admin', icon: ShieldCheck, label: 'Admin' });
+  }
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 glass border-t border-border">
       <div className="flex items-center justify-around h-16 max-w-lg mx-auto px-2">
-        {navItems.map(({ path, icon: Icon, label }) => {
+        {items.map(({ path, icon: Icon, label }) => {
           const isActive = location.pathname === path;
           const savedCount = path === '/saved' ? savedJobs.filter(s => s.status === 'saved').length : 0;
 

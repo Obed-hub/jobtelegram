@@ -83,15 +83,25 @@ export function AuthForm() {
               <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-2 animate-bounce">
                 <Mail className="w-8 h-8 text-primary" />
               </div>
-              <h3 className="text-xl font-bold">Check your inbox!</h3>
-              <p className="text-sm text-muted-foreground px-4">
-                We've sent a secure sign-in link to <span className="font-bold text-foreground">{email}</span>. Click the link to log in.
+              <h3 className="text-xl font-bold text-foreground">Check your inbox!</h3>
+              <p className="text-sm text-muted-foreground px-4 leading-relaxed">
+                We've sent a secure sign-in link to <span className="font-bold text-foreground">{email}</span>. <br/>Click the link to finish signing up.
               </p>
+              
+              <div className="mt-6 p-4 rounded-xl bg-amber-500/5 border border-amber-500/10 text-left">
+                <p className="text-[10px] font-bold text-amber-600 uppercase tracking-widest mb-2">Trouble finding it?</p>
+                <ul className="text-[10px] text-muted-foreground space-y-1 list-disc pl-3">
+                  <li>Check your <strong>Spam</strong> or Promotions folder</li>
+                  <li>Ensure the email above is typed correctly</li>
+                  <li>Clicking the link in a different browser/device? We'll ask for your email again for security.</li>
+                </ul>
+              </div>
+
               <Button 
                 variant="ghost" 
                 size="sm" 
                 onClick={() => setLinkSent(false)}
-                className="text-xs font-bold uppercase tracking-widest text-primary hover:bg-primary/10"
+                className="text-xs font-bold uppercase tracking-widest text-primary hover:bg-primary/10 mt-4"
               >
                 Resend or change email
               </Button>

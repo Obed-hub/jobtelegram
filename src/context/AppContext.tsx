@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
-import { UserProfile, MatchedJob, TrackedApplication, ApplicationStatus, UserFeedback, FeedbackAction, Job } from '@/types/job';
+import { UserProfile, MatchedJob, TrackedApplication, ApplicationStatus, UserFeedback, FeedbackAction, Job, DEFAULT_WEIGHTS } from '@/types/job';
 import { SyncResult, NormalizedJob } from '@/types/normalized-job';
-import { mockJobs } from '@/data/mockJobs';
+// Removed: import { mockJobs } from '@/data/mockJobs';
 import { matchJobs } from '@/lib/matching';
 import { aggregateJobs, AggregationResult } from '@/lib/sources/aggregator';
 import { normalizedToJob } from '@/lib/sources/bridge';
@@ -14,6 +14,31 @@ import {
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { toast } from 'sonner';
 import { LIMITS, LimitAction } from '@/config/limits';
+import { isUserAdmin } from '@/config/admin';
+
+const DEFAULT_PROFILE: UserProfile = {
+  role: '',
+  normalizedRole: '',
+  primaryKeywords: [],
+  coreSkills: [],
+  optionalSkills: [],
+  excludedKeywords: [],
+  experience_level: 'mid',
+  years: 3,
+  workTypes: ['remote'],
+  locationPreferences: [],
+  bio: '',
+  inferredTags: [],
+  synonymMap: {},
+  scoreWeights: DEFAULT_WEIGHTS,
+  matchThreshold: 50,
+  dailyJobsSwiped: 0,
+  dailyCvFits: 0,
+  dailyAiAnalysisCount: 0,
+  dailyInterviewCount: 0,
+  lastActivityDate: new Date().toDateString(),
+  isAdmin: false
+};
 
 interface AppState {
   user: User | null;
@@ -61,7 +86,14 @@ const AppContext = createContext<AppState | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [profile, setProfileState] = useState<UserProfile | null>(null);
+  const [profile, setProfileState] = useState<UserProfile | null>(() => {
+    try {
+      const stored = localStorage.getItem('userProfile');
+      return stored ? JSON.parse(stored) : DEFAULT_PROFILE;
+    } catch {
+      return DEFAULT_PROFILE;
+    }
+  });
   const [allMatchedJobs, setAllMatchedJobs] = useState<MatchedJob[]>([]);
   const [savedJobs, setSavedJobs] = useState<TrackedApplication[]>(() => {
     try {
@@ -101,17 +133,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
     try {
       localStorage.setItem('skippedIds', JSON.stringify(Array.from(skippedIds)));
       localStorage.setItem('seenIds', JSON.stringify(Array.from(seenIds)));
+      if (profile) {
+        localStorage.setItem('userProfile', JSON.stringify(profile));
+      }
     } catch (err) {
-      console.error('Failed to save IDs to localStorage', err);
+      console.error('Failed to save to localStorage', err);
     }
-  }, [skippedIds, seenIds]);
+  }, [skippedIds, seenIds, profile]);
   const [feedbackLog, setFeedbackLog] = useState<UserFeedback[]>([]);
   const [syncLogs, setSyncLogs] = useState<SyncResult[]>([]);
   const [isHighSignalFilterActive, setIsHighSignalFilterActive] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [totalFetched, setTotalFetched] = useState(0);
   const [duplicatesRemoved, setDuplicatesRemoved] = useState(0);
-  const [jobPool, setJobPool] = useState<Job[]>(mockJobs);
+  const [jobPool, setJobPool] = useState<Job[]>([]);
   const [userAvatarUrl, setUserAvatarUrl] = useState('');
 
   // Use a ref to capture current profile/savedJobs without re-triggering auth useEffect
@@ -137,7 +172,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setIsSyncing(true);
     try {
       const result: AggregationResult = await aggregateJobs({ 
-        useMockFallback: true,
+        useMockFallback: false,
         profile: profile || undefined
       });
       const convertedJobs = result.jobs.map(normalizedToJob);
@@ -175,9 +210,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
     // Auth & Data Persistence
     // Handle Firebase Email Link (Passwordless) redirection
     if (isSignInWithEmailLink(auth, window.location.href)) {
-      let email = window.localStorage.getItem('emailForSignIn');
+      const isLocalStorageAvailable = () => {
+        try {
+          localStorage.setItem('test', 'test');
+          localStorage.removeItem('test');
+          return true;
+        } catch (e) {
+          return false;
+        }
+      };
+
+      let email = isLocalStorageAvailable() ? window.localStorage.getItem('emailForSignIn') : null;
       
-      // Prompt user if email is missing (e.g. they opened the link on a different device)
       if (!email) {
         email = window.prompt('Please provide your email for confirmation');
       }
@@ -185,12 +229,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (email) {
         signInWithEmailLink(auth, email, window.location.href)
           .then(() => {
-            window.localStorage.removeItem('emailForSignIn');
+            if (isLocalStorageAvailable()) {
+              window.localStorage.removeItem('emailForSignIn');
+            }
             toast.success('Successfully signed in with email link!');
           })
           .catch((error) => {
             console.error('Email link sign-in error:', error);
-            toast.error('Failed to sign in with email link. The link may have expired.');
+            if (error.code === 'auth/invalid-action-code') {
+              toast.error('The sign-in link has expired or has already been used.');
+            } else {
+              toast.error('Failed to sign in with email link. Please try again.');
+            }
           });
       }
     }
@@ -214,14 +264,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
                   dailyCvFits: 0,
                   dailyAiAnalysisCount: 0,
                   dailyInterviewCount: 0,
-                  lastActivityDate: now
+                  lastActivityDate: now,
+                  isAdmin: isUserAdmin(currentUser.uid)
                 };
                 setProfileState(resetProfile);
                  persist(currentUser.uid, { profile: resetProfile });
                 // Automatically sync fresh jobs on new day login
                 syncJobsRef.current();
               } else {
-                setProfileState(data.profile);
+                setProfileState({
+                  ...data.profile,
+                  isAdmin: isUserAdmin(currentUser.uid)
+                });
               }
             }
             if (data.savedJobs) setSavedJobs(data.savedJobs);
@@ -242,6 +296,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
         } catch (err) {
           console.error('[Firestore] Error loading user doc:', err);
         }
+      } else {
+        // User logged out
+        setProfileState(DEFAULT_PROFILE);
+        localStorage.removeItem('userProfile');
+        localStorage.removeItem('savedJobs');
+        localStorage.removeItem('skippedIds');
+        localStorage.removeItem('seenIds');
       }
     });
 
@@ -320,11 +381,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     try {
       await sendSignInLinkToEmail(auth, email, actionCodeSettings);
-      window.localStorage.setItem('emailForSignIn', email);
+      try {
+        window.localStorage.setItem('emailForSignIn', email);
+      } catch (e) {
+        console.warn('LocalStorage not available, user will need to re-enter email on redirect');
+      }
       toast.success('Sign-in link sent to your email!');
     } catch (error: any) {
       console.error('Error sending link:', error);
-      toast.error(error.message || 'Failed to send sign-in link');
+      if (error.code === 'auth/unauthorized-domain') {
+        toast.error('This domain is not authorized for email links. Please check your Firebase Console settings.');
+      } else {
+        toast.error(error.message || 'Failed to send sign-in link');
+      }
       throw error;
     }
   };
@@ -347,8 +416,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, []); // Only once on mount
 
   const setProfile = useCallback((p: UserProfile) => {
-    setProfileState(p);
-    const matched = matchJobs(p, jobPool);
+    const updatedProfile = { ...p, isAdmin: isUserAdmin(user?.uid) };
+    setProfileState(updatedProfile);
+    const matched = matchJobs(updatedProfile, jobPool);
     // Initial filter by seenIds to avoid already viewed jobs on profile update
     const unseen = matched.filter(j => !seenIds.has(j.id));
     setAllMatchedJobs(unseen);
@@ -407,9 +477,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return isRemote && hasGlobalCurrency;
   };
 
-  const filteredJobs = isHighSignalFilterActive 
+  const baseFilteredJobs = isHighSignalFilterActive 
     ? availableJobs.filter(isHighSignal)
     : availableJobs;
+
+  // New: Separate job matches by tier
+  const filteredJobs = baseFilteredJobs.filter(job => {
+    if (profile?.isPremium) {
+      return job.matchScore >= 50;
+    } else {
+      return job.matchScore < 50;
+    }
+  });
 
   const updateUsage = useCallback((action: LimitAction) => {
     setProfileState(prev => {

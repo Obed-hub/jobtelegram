@@ -6,7 +6,7 @@ import { generateKeywordsFromRole, extractBioSignals, ALL_SUGGESTED_ROLES, COMMO
 import { generateProfileSuggestions } from '@/lib/ai';
 import { extractTextFromPdf } from '@/lib/pdf-parser';
 import { matchJobs } from '@/lib/matching';
-import { mockJobs } from '@/data/mockJobs';
+// Removed: import { mockJobs } from '@/data/mockJobs';
 import { SYNONYM_DICTIONARY } from '@/lib/synonyms';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -112,7 +112,7 @@ function ProfileCompleteness({ profile }: { profile: Partial<UserProfile> }) {
 
 
 export default function ProfilePage() {
-  const { profile, setProfile, profileComplete, user, loginWithGoogle, logout, userAvatarUrl, checkLimit } = useApp();
+  const { profile, setProfile, profileComplete, user, loginWithGoogle, logout, userAvatarUrl, checkLimit, jobPool } = useApp();
   const navigate = useNavigate();
 
   const [form, setForm] = React.useState({
@@ -242,8 +242,8 @@ export default function ProfilePage() {
 
   const previewMatches = React.useMemo(() => {
     if (!showPreview || !form.role) return [];
-    return matchJobs(currentProfileSnapshot, mockJobs).slice(0, 5);
-  }, [showPreview, currentProfileSnapshot]);
+    return matchJobs(currentProfileSnapshot, jobPool).slice(0, 5);
+  }, [showPreview, currentProfileSnapshot, jobPool]);
 
 
 

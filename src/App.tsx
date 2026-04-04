@@ -11,6 +11,7 @@ import ApplicationsPage from "@/pages/ApplicationsPage";
 import JobDetailsPage from "@/pages/JobDetailsPage";
 import AnalyticsPage from "@/pages/AnalyticsPage";
 import FreelanceNetworksPage from "@/pages/FreelanceNetworksPage";
+import AdminPage from "@/pages/AdminPage";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ const App = () => (
               <Route path="/job/:id" element={<JobDetailsPage />} />
               <Route path="/analytics" element={<AnalyticsPage />} />
               <Route path="/networks" element={<FreelanceNetworksPage />} />
+              <Route path="/admin" element={<AdminPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             <BottomNav />

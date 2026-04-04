@@ -1,17 +1,29 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    
+    // Function to check if the current user is an admin
+    function isAdmin() {
+      return request.auth != null && (
+        request.auth.uid == 'SQMxS2tLumdrpGRcEYM32iR4QMk1'
+      );
+    }
+
     match /users/{userId} {
+      // Users can read/write their own profiles
       allow read: if request.auth != null && request.auth.uid == userId;
-      allow write: if request.auth != null && request.auth.uid == userId
-                   && (
-                     // Admin/Premium bypass or just checking if they are exceeding free tier
-                     request.resource.data.profile.isPremium == true 
-                     || (
-                       request.resource.data.profile.dailyCvFits <= 1
-                       && request.resource.data.profile.dailyJobsSwiped <= 5
-                     )
-                   );
+      allow write: if request.auth != null && request.auth.uid == userId;
+      
+      // Admins can read all users and update statuses
+      allow list, read: if isAdmin();
+      allow update: if isAdmin();
+    }
+    
+    match /errors/{errorId} {
+      // Anyone can post a crash report
+      allow create: if true;
+      // Only admins can see and manage error logs
+      allow read, list, delete: if isAdmin();
     }
   }
 }

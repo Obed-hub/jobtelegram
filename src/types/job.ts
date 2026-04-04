@@ -42,6 +42,17 @@ export interface UserProfile {
   dailyInterviewCount?: number;
   lastActivityDate?: string;
   joinedAt?: string;
+  isAdmin?: boolean;
+}
+
+export interface AppError {
+  id?: string;
+  message: string;
+  stack?: string;
+  timestamp: string;
+  userId?: string;
+  userAgent?: string;
+  url?: string;
 }
 
 export interface StructuredCv {
