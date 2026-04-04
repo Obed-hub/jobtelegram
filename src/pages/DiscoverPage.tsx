@@ -214,7 +214,7 @@ export default function DiscoverPage() {
               onSwipe={() => {
                 setHasSwipedIntro(true);
                 sessionStorage.setItem('gigspark_intro_swiped', 'true');
-                toast.info('Search started!', { icon: <Sparkles className="w-4 h-4 text-primary" /> });
+                toast.success('Search started!');
               }}
             />
           ) : (
@@ -225,7 +225,7 @@ export default function DiscoverPage() {
                 handleSwipeCheck(() => {
                   recordFeedback(currentJob.id, 'skipped');
                   skipJob();
-                  toast('Skipped', { description: currentJob.title });
+                  toast('Skipped');
                 });
               }}
               onSwipeRight={() => {
@@ -233,7 +233,7 @@ export default function DiscoverPage() {
                   recordFeedback(currentJob.id, 'saved');
                   saveJob(currentJob);
                   skipJob();
-                  toast.success('Saved!', { description: currentJob.title });
+                  toast.success('Saved!');
                 });
               }}
               onTap={() => navigate(`/job/${currentJob.id}`)}
@@ -298,7 +298,7 @@ export default function DiscoverPage() {
             if (!hasSwipedIntro) {
               setHasSwipedIntro(true);
               sessionStorage.setItem('gigspark_intro_swiped', 'true');
-              toast.success('Search started!', { icon: <Sparkles className="w-4 h-4 text-primary" /> });
+              toast.success('Search started!');
               return;
             }
             handleSwipeCheck(() => {
