@@ -35,7 +35,7 @@ export interface NormalizedJob {
   active: boolean;
 }
 
-export type JobSource = 'remotive' | 'arbeitnow' | 'remoteok' | 'greenhouse' | 'lever' | 'hacker_news' | 'mock';
+export type JobSource = 'remotive' | 'arbeitnow' | 'remoteok' | 'greenhouse' | 'lever' | 'hacker_news' | 'weworkremotely' | 'mock';
 
 export interface SyncResult {
   source: JobSource;

@@ -11,7 +11,7 @@ import { mockJobs } from '@/data/mockJobs';
 import { matchJobs } from '@/lib/matching';
 import { toast } from 'sonner';
 import { useState, useEffect, useRef } from 'react';
-import { generateJobAnalysis, generateFitCv, generateInterviewPrep } from '@/lib/ai';
+import { generateJobAnalysis, generateFitCv, generateInterviewPrep, parseCvToStructure } from '@/lib/ai';
 import { extractTextFromPdf } from '@/lib/pdf-parser';
 import { jsPDF } from 'jspdf';
 
@@ -122,19 +122,34 @@ export default function JobDetailsPage() {
 
     setIsGenerating(true);
     setAiResult(null);
-    toast.info('Crafting your tailored CV...');
+    incrementDailyCvFits(); // Burn the credit before starting the process
+    toast.info('Analyzing & Structuring CV...');
 
     try {
-      const result = await generateFitCv(job, profile, {
-        cvText,
-        achievements: measurableAchievements,
-        missingItems
-      });
-      incrementDailyCvFits();
+      // Step 1: Combine raw inputs into a single text for structured parsing
+      const fullRawContext = `
+        PRIMARY CV TEXT:
+        ${cvText}
+        
+        ACHIEVEMENTS:
+        ${measurableAchievements}
+        
+        MISSITIVE TOOLS/PROJECTS:
+        ${missingItems}
+      `.trim();
+
+      // Step 2: Parse into the required structure
+      const structuredCv = await parseCvToStructure(fullRawContext);
+      console.log('Structured CV Input for AI Fit:', JSON.stringify(structuredCv, null, 2));
+      
+      // Step 3: Generate the fit using the structured data
+      const result = await generateFitCv(job, structuredCv);
+      
       setAiResult(result);
       setShowFitCvForm(false);
       toast.success('CV Tailored Successfully!');
     } catch (err) {
+      console.error('Fit CV Error:', err);
       toast.error('Failed to fit CV. Check your connection.');
     } finally {
       setIsGenerating(false);

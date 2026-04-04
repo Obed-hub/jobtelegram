@@ -25,7 +25,7 @@ export function UpgradeCard({ className = '', title, description }: UpgradeCardP
           </div>
           <div>
             <h3 className="text-lg font-bold gradient-text">Premium Active</h3>
-            <p className="text-xs text-muted-foreground">You have unlimited access to all features.</p>
+            <p className="text-xs text-muted-foreground">You have unlimited matches until jobs run out for the day!</p>
           </div>
         </div>
       </div>
@@ -33,7 +33,7 @@ export function UpgradeCard({ className = '', title, description }: UpgradeCardP
   }
 
   const features = [
-    { icon: <Zap className="w-4 h-4 text-primary" />, label: 'Unlimited Swipes', desc: `Beyond 3 jobs/day` },
+    { icon: <Zap className="w-4 h-4 text-primary" />, label: 'Unlimited Swipes', desc: 'Get all matches (Free: 3/day)' },
     { icon: <Sparkles className="w-4 h-4 text-purple-500" />, label: 'AI CV Tailoring', desc: 'Perfect fits every time' },
     { icon: <Globe className="w-4 h-4 text-accent" />, label: 'Hidden Gigs', desc: '50+ exclusive networks' },
     { icon: <ShieldCheck className="w-4 h-4 text-success" />, label: 'Private Jobs', desc: 'Exclusive hidden roles' },

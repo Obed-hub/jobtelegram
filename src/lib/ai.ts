@@ -1,5 +1,6 @@
 import Groq from 'groq-sdk';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { StructuredCv } from '@/types/job';
 
 const groq = new Groq({
   apiKey: import.meta.env.VITE_GROQ_API_KEY,
@@ -83,25 +84,55 @@ export async function generateJobAnalysis(job: any, profile: any) {
   return getAiResponse(prompt, 'groq');
 }
 
-export async function generateFitCv(job: any, profile: any, extraContext?: { cvText?: string; achievements?: string; missingItems?: string; }) {
+
+/** 
+ * Parsing and Tailoring 
+ */
+
+export async function parseCvToStructure(rawText: string): Promise<StructuredCv> {
   const prompt = `
-    Fit the user's career profile and CV to match this specific job requirement.
+    Extract career details from the following resume text and format it strictly as valid JSON.
+    If details are missing, leave the field as an empty string or empty array as per context.
     
-    Job: ${job.title} at ${job.company}
+    Structure:
+    {
+      "name": "", "title": "", "years_experience": "", "location": "",
+      "email": "", "phone": "", "portfolio": "", "linkedin": "", "target_role": "",
+      "skills": [], "tools": [], "technologies": [],
+      "experience": [{ "company": "", "role": "", "duration": "", "location": "", "achievements": [] }],
+      "projects": [{ "name": "", "description": "", "impact": "", "tools": [] }],
+      "education": [], "certifications": [], "achievements": []
+    }
+    
+    Resume Text:
+    ${rawText}
+  `;
+  
+  try {
+    const response = await getAiResponse(prompt, 'groq');
+    const jsonStr = response.match(/\{[\s\S]*\}/)?.[0] || response;
+    return JSON.parse(jsonStr);
+  } catch (error) {
+    console.error('[AI/ParseCV] Error:', error);
+    throw error;
+  }
+}
+
+export async function generateFitCv(job: any, structuredCv: StructuredCv) {
+  const prompt = `
+    Tailor the user's career profile to match this specific job requirement using their structured CV data.
+    
+    Target Job: ${job.title} at ${job.company}
     Key Requirements: ${job.requirements.join(', ')}
+    Job Description: ${job.description}
     
-    User Profile Data:
-    Role: ${profile.role}
-    Core Skills: ${profile.coreSkills.join(', ')}
-    
-    ${extraContext?.cvText ? `USER'S CURRENT CV TEXT:\n${extraContext.cvText}\n` : `Bio/Background: ${profile.bio}`}
-    ${extraContext?.achievements ? `ADDITIONAL MEASURABLE ACHIEVEMENTS:\n${extraContext.achievements}\n` : ''}
-    ${extraContext?.missingItems ? `ADDITIONAL TOOLS/CERTIFICATIONS/PROJECTS:\n${extraContext.missingItems}\n` : ''}
+    User Structured CV:
+    ${JSON.stringify(structuredCv, null, 2)}
     
     Task:
-    1. Write a 2-3 sentence "Tailored Professional Summary" that positions the user as the ideal candidate. Focus on their experience from the provided CV and Profile.
-    2. Provide 3-5 "Matching Skill Highlights" from the user's background that solve the job's biggest requirements. Incorporate any additional achievements or tools provided.
-    3. Suggest 2-3 minor adjustments to their experience section to better highlight their fit.
+    1. Write a 2-3 sentence "Tailored Professional Summary" that highlights their most relevant skills for ${job.title}.
+    2. Provide 3-5 "Matching Skill Highlights" from their experience and projects that solve the job's biggest requirements.
+    3. Suggest 2-3 minor adjustments to their experience descriptions to better highlight their fit.
     
     Format:
     [Tailored Summary]

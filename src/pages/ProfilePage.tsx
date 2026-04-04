@@ -1,4 +1,5 @@
 import React from 'react';
+import { cn } from '@/lib/utils';
 import { useApp } from '@/context/AppContext';
 import { UserProfile, ScoreWeights, DEFAULT_WEIGHTS } from '@/types/job';
 import { generateKeywordsFromRole, extractBioSignals, ALL_SUGGESTED_ROLES, COMMON_LOCATIONS } from '@/lib/keywords';
@@ -10,7 +11,7 @@ import { SYNONYM_DICTIONARY } from '@/lib/synonyms';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   User, Briefcase, MapPin, Code2, FileText, Sparkles, Check, X,
-  Zap, ShieldOff, Eye, BarChart3, Target, LogOut, Globe, ChevronRight, Activity, MessageSquare
+  Zap, ShieldOff, Eye, BarChart3, Target, LogOut, Globe, ChevronRight, MessageSquare
 } from 'lucide-react';
 import { LIMITS } from '@/config/limits';
 import { useNavigate } from 'react-router-dom';
@@ -74,59 +75,7 @@ function TagInput({ tags, onAdd, onRemove, placeholder, colorClass }: {
 
 
 
-function UsageStats({ profile }: { profile: Partial<UserProfile> }) {
-  const stats = [
-    { label: 'Daily Swipes', current: profile.dailyJobsSwiped || 0, max: LIMITS.FREE.DAILY_SWIPES, color: 'bg-primary' },
-    { label: 'AI Insights', current: profile.dailyAiAnalysisCount || 0, max: LIMITS.FREE.DAILY_AI_INSIGHTS, color: 'bg-accent' },
-    { label: 'CV Fits', current: profile.dailyCvFits || 0, max: LIMITS.FREE.DAILY_CV_FITS, color: 'bg-success' },
-    { label: 'Interview Preps', current: profile.dailyInterviewCount || 0, max: LIMITS.FREE.DAILY_INTERVIEW_PREP, color: 'bg-warning' },
-  ];
 
-  return (
-    <div className="glass-card rounded-2xl p-5 mb-8 border-primary/10">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-bold flex items-center gap-2">
-          <Activity className="w-4 h-4 text-primary" />
-          Daily Usage & Limits
-        </h3>
-        {profile.isPremium ? (
-          <span className="text-[10px] font-bold text-primary uppercase bg-primary/10 px-2 py-0.5 rounded-full">Unlimited Access</span>
-        ) : (
-          <span className="text-[10px] font-bold text-muted-foreground uppercase">Free Plan</span>
-        )}
-      </div>
-      
-      <div className="space-y-4">
-        {stats.map(stat => {
-          const pct = profile.isPremium ? 0 : Math.min(Math.round((stat.current / stat.max) * 100), 100);
-          return (
-            <div key={stat.label}>
-              <div className="flex justify-between items-center mb-1.5">
-                <span className="text-[11px] font-medium text-muted-foreground">{stat.label}</span>
-                <span className="text-[11px] font-bold">
-                  {stat.current} <span className="text-muted-foreground font-normal">/ {profile.isPremium ? '∞' : stat.max}</span>
-                </span>
-              </div>
-              <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
-                <motion.div 
-                  initial={{ width: 0 }}
-                  animate={{ width: profile.isPremium ? '100%' : `${pct}%` }}
-                  className={`h-full rounded-full ${profile.isPremium ? 'bg-gradient-to-r from-primary to-accent' : stat.color}`}
-                />
-              </div>
-            </div>
-          );
-        })}
-      </div>
-      
-      {!profile.isPremium && (
-        <p className="mt-4 text-[10px] text-muted-foreground text-center italic">
-          Usage resets every 24 hours. Get unlimited access with Premium.
-        </p>
-      )}
-    </div>
-  );
-}
 
 function ProfileCompleteness({ profile }: { profile: Partial<UserProfile> }) {
   const checks = [
@@ -163,7 +112,7 @@ function ProfileCompleteness({ profile }: { profile: Partial<UserProfile> }) {
 
 
 export default function ProfilePage() {
-  const { profile, setProfile, profileComplete, user, loginWithGoogle, logout, userAvatarUrl } = useApp();
+  const { profile, setProfile, profileComplete, user, loginWithGoogle, logout, userAvatarUrl, checkLimit } = useApp();
   const navigate = useNavigate();
 
   const [form, setForm] = React.useState({
@@ -305,6 +254,7 @@ export default function ProfilePage() {
     }
     setProfile(currentProfileSnapshot);
     toast.success('Profile saved! Discover your matches.');
+    navigate('/');
   };
 
   const toggleWorkType = (type: string) => {
@@ -365,16 +315,7 @@ export default function ProfilePage() {
 
         <ProfileCompleteness profile={currentProfileSnapshot} />
 
-        <UsageStats profile={profile || {}} />
 
-
-        {/* Premium Upgrade Card */}
-        <div className="mb-10">
-          <UpgradeCard 
-            title="Premium Access" 
-            description="Boost your hunt with advanced AI & exclusive platforms."
-          />
-        </div>
 
         <div className="space-y-5">
           {/* 1. Preferred Role */}

@@ -47,6 +47,11 @@ export default defineConfig(({ mode }) => ({
         changeOrigin: true,
         rewrite: (path: string) => path.replace(/^\/api\/adzuna/, ''),
       },
+      '/api/wwr': {
+        target: 'https://weworkremotely.com',
+        changeOrigin: true,
+        rewrite: (path: string) => path.replace(/^\/api\/wwr/, ''),
+      },
     },
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),

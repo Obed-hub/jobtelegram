@@ -44,6 +44,37 @@ export interface UserProfile {
   joinedAt?: string;
 }
 
+export interface StructuredCv {
+  name: string;
+  title: string;
+  years_experience: string;
+  location: string;
+  email: string;
+  phone: string;
+  portfolio: string;
+  linkedin: string;
+  target_role: string;
+  skills: string[];
+  tools: string[];
+  technologies: string[];
+  experience: {
+    company: string;
+    role: string;
+    duration: string;
+    location: string;
+    achievements: string[];
+  }[];
+  projects: {
+    name: string;
+    description: string;
+    impact: string;
+    tools: string[];
+  }[];
+  education: string[];
+  certifications: string[];
+  achievements: string[];
+}
+
 export interface Job {
   id: string;
   title: string;

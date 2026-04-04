@@ -4,11 +4,15 @@ import { useApp } from '@/context/AppContext';
 import { SwipeCard } from '@/components/SwipeCard';
 import { MatchExplanation } from '@/components/MatchExplanation';
 import { UpgradeModal } from '@/components/UpgradeModal';
-import { UpgradeCard } from '@/components/UpgradeCard';
 import { useNavigate } from 'react-router-dom';
-import { BonusPlatforms } from '@/components/BonusPlatforms';
-import { CheckCircle2, X, Heart, ExternalLink, Sparkles, ThumbsUp, ThumbsDown, RefreshCw, Globe, Share2, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
+import { 
+  CheckCircle2, X, Heart, ExternalLink, Sparkles, ThumbsUp, 
+  ThumbsDown, RefreshCw, Globe, Share2, ShieldCheck 
+} from 'lucide-react';
+import { ProgressSwipeCard } from '@/components/ProgressSwipeCard';
+import { BonusPlatforms } from '@/components/BonusPlatforms';
+import { UpgradeCard } from '@/components/UpgradeCard';
 import { LIMITS } from '@/config/limits';
 
 export default function DiscoverPage() {
@@ -30,6 +34,11 @@ export default function DiscoverPage() {
 
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [upgradeReason, setUpgradeReason] = useState<'jobs' | 'cv'>('jobs');
+  
+  // Track if they've swiped past the intro card in this session
+  const [hasSwipedIntro, setHasSwipedIntro] = useState(() => {
+    return sessionStorage.getItem('gigspark_intro_swiped') === 'true';
+  });
 
   const handleSwipeCheck = (action: () => void) => {
     if (checkLimit('DAILY_SWIPES')) {
@@ -86,14 +95,14 @@ export default function DiscoverPage() {
               <div className="absolute inset-0 border-2 border-primary rounded-2xl animate-ping opacity-20"></div>
             )}
           </div>
-          <h2 className="text-xl font-bold mb-3">No more matches</h2>
+          <h2 className="text-xl font-bold mb-3">You're all caught up!</h2>
           {checkLimit('DAILY_SWIPES') ? (
-            <p className="text-xs text-muted-foreground mb-6 leading-relaxed">
-              You've hit your free limit of {LIMITS.FREE.DAILY_SWIPES} swipes today. Upgrade to Premium for unlimited matches!
+            <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
+              You've hit your free limit of <strong>{LIMITS.FREE.DAILY_SWIPES} matches</strong> for today. <br/>Come back tomorrow or upgrade for unlimited searching!
             </p>
           ) : (
-            <p className="text-xs text-muted-foreground mb-6 leading-relaxed">
-              You've viewed all current matches. Try refreshing the feed or updating your profile to discover new opportunities.
+            <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
+              We've searched all our sources and didn't find any more matches for your current profile. New jobs are added throughout the day!
             </p>
           )}
           <div className="flex flex-col gap-3">
@@ -194,26 +203,42 @@ export default function DiscoverPage() {
 
       <div className="relative h-[calc(100vh-16rem)]">
         <AnimatePresence mode="popLayout">
-          <SwipeCard
-            key={currentJob.id}
-            job={currentJob}
-            onSwipeLeft={() => {
-              handleSwipeCheck(() => {
-                recordFeedback(currentJob.id, 'skipped');
-                skipJob();
-                toast('Skipped', { description: currentJob.title });
-              });
-            }}
-            onSwipeRight={() => {
-              handleSwipeCheck(() => {
-                recordFeedback(currentJob.id, 'saved');
-                saveJob(currentJob);
-                skipJob();
-                toast.success('Saved!', { description: currentJob.title });
-              });
-            }}
-            onTap={() => navigate(`/job/${currentJob.id}`)}
-          />
+          {!hasSwipedIntro ? (
+            <ProgressSwipeCard 
+              key="intro-card"
+              profile={profile || {}}
+              onUpgrade={() => {
+                setUpgradeReason('jobs');
+                setShowUpgradeModal(true);
+              }}
+              onSwipe={() => {
+                setHasSwipedIntro(true);
+                sessionStorage.setItem('gigspark_intro_swiped', 'true');
+                toast.info('Search started!', { icon: <Sparkles className="w-4 h-4 text-primary" /> });
+              }}
+            />
+          ) : (
+            <SwipeCard
+              key={currentJob.id}
+              job={currentJob}
+              onSwipeLeft={() => {
+                handleSwipeCheck(() => {
+                  recordFeedback(currentJob.id, 'skipped');
+                  skipJob();
+                  toast('Skipped', { description: currentJob.title });
+                });
+              }}
+              onSwipeRight={() => {
+                handleSwipeCheck(() => {
+                  recordFeedback(currentJob.id, 'saved');
+                  saveJob(currentJob);
+                  skipJob();
+                  toast.success('Saved!', { description: currentJob.title });
+                });
+              }}
+              onTap={() => navigate(`/job/${currentJob.id}`)}
+            />
+          )}
         </AnimatePresence>
       </div>
 
@@ -270,9 +295,7 @@ export default function DiscoverPage() {
         </button>
       </div>
 
-      <div className="mt-12 pb-8">
-        <UpgradeCard />
-      </div>
+      <div className="mt-12 pb-8" />
 
       <UpgradeModal isOpen={showUpgradeModal} onOpenChange={setShowUpgradeModal} reason={upgradeReason} />
     </div>

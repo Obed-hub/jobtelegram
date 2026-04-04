@@ -8,19 +8,28 @@ import { Mail, Lock, LogIn, UserPlus, Sparkles, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export function AuthForm() {
-  const { loginWithGoogle, loginWithEmail, signUpWithEmail, userAvatarUrl } = useApp();
+  const { loginWithGoogle, loginWithEmail, signUpWithEmail, sendPasswordlessLink, userAvatarUrl } = useApp();
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [authMethod, setAuthMethod] = useState<'password' | 'link'>('password');
+  const [linkSent, setLinkSent] = useState(false);
 
   const handleEmailAuth = async (type: 'login' | 'signup') => {
-    if (!email || !password) return;
+    if (!email) return;
+    if (authMethod === 'password' && !password) return;
+    
     setIsLoading(true);
     try {
-      if (type === 'login') {
-        await loginWithEmail(email, password);
+      if (authMethod === 'link') {
+        await sendPasswordlessLink(email);
+        setLinkSent(true);
       } else {
-        await signUpWithEmail(email, password);
+        if (type === 'login') {
+          await loginWithEmail(email, password);
+        } else {
+          await signUpWithEmail(email, password);
+        }
       }
     } catch (err) {
       // Errors handled in context toasts
@@ -64,53 +73,100 @@ export function AuthForm() {
         </TabsList>
 
         <AnimatePresence mode="wait">
-          <TabsContent value="login" className="space-y-4 outline-none">
-            <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">Email Address</Label>
-                <div className="relative group">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                  <Input 
-                    id="email" 
-                    type="email" 
-                    placeholder="name@example.com" 
-                    className="pl-10 h-11 bg-muted/30 border-border/50 focus:border-primary transition-all rounded-xl"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
-                </div>
+          {linkSent ? (
+            <motion.div 
+              key="sent"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="py-12 flex flex-col items-center text-center space-y-4"
+            >
+              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-2 animate-bounce">
+                <Mail className="w-8 h-8 text-primary" />
               </div>
+              <h3 className="text-xl font-bold">Check your inbox!</h3>
+              <p className="text-sm text-muted-foreground px-4">
+                We've sent a secure sign-in link to <span className="font-bold text-foreground">{email}</span>. Click the link to log in.
+              </p>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setLinkSent(false)}
+                className="text-xs font-bold uppercase tracking-widest text-primary hover:bg-primary/10"
+              >
+                Resend or change email
+              </Button>
+            </motion.div>
+          ) : (
+            <TabsContent value="login" key="login" className="space-y-4 outline-none">
+              <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between ml-1">
+                    <Label htmlFor="email" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Email Address</Label>
+                    <button 
+                      onClick={() => setAuthMethod(authMethod === 'password' ? 'link' : 'password')}
+                      className="text-[10px] font-bold text-primary hover:underline uppercase tracking-wider transition-all"
+                    >
+                      {authMethod === 'password' ? 'Use Email Link' : 'Use Password'}
+                    </button>
+                  </div>
+                  <div className="relative group">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                    <Input 
+                      id="email" 
+                      type="email" 
+                      placeholder="name@example.com" 
+                      className="pl-10 h-11 bg-muted/30 border-border/50 focus:border-primary transition-all rounded-xl"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
+                  </div>
+                </div>
+                
+                {authMethod === 'password' && (
+                  <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
+                    <div className="flex items-center justify-between ml-1">
+                      <Label htmlFor="password" title="password" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Password</Label>
+                      <button className="text-[10px] font-bold text-primary hover:underline uppercase tracking-wider">Forgot?</button>
+                    </div>
+                    <div className="relative group">
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                      <Input 
+                        id="password" 
+                        type="password" 
+                        placeholder="••••••••" 
+                        className="pl-10 h-11 bg-muted/30 border-border/50 focus:border-primary transition-all rounded-xl"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <Button 
+                  onClick={() => handleEmailAuth('login')}
+                  disabled={isLoading || !email || (authMethod === 'password' && !password)}
+                  className="w-full h-11 rounded-xl font-bold bg-primary hover:opacity-90 transition-all shadow-lg shadow-primary/20"
+                >
+                  {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : (
+                    authMethod === 'link' ? "Send Sign-In Link" : "Sign In"
+                  )}
+                </Button>
+              </div>
+            </TabsContent>
+          )}
+
+          <TabsContent value="signup" key="signup" className="space-y-4 outline-none">
+            <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
               <div className="space-y-2">
                 <div className="flex items-center justify-between ml-1">
-                  <Label htmlFor="password" title="password" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Password</Label>
-                  <button className="text-[10px] font-bold text-primary hover:underline uppercase tracking-wider">Forgot?</button>
+                  <Label htmlFor="signup-email" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Email Address</Label>
+                  <button 
+                    onClick={() => setAuthMethod(authMethod === 'password' ? 'link' : 'password')}
+                    className="text-[10px] font-bold text-primary hover:underline uppercase tracking-wider transition-all"
+                  >
+                    {authMethod === 'password' ? 'Use Email Link' : 'Use Password'}
+                  </button>
                 </div>
-                <div className="relative group">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                  <Input 
-                    id="password" 
-                    type="password" 
-                    placeholder="••••••••" 
-                    className="pl-10 h-11 bg-muted/30 border-border/50 focus:border-primary transition-all rounded-xl"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
-                </div>
-              </div>
-              <Button 
-                onClick={() => handleEmailAuth('login')}
-                disabled={isLoading || !email || !password}
-                className="w-full h-11 rounded-xl font-bold bg-primary hover:opacity-90 transition-all shadow-lg shadow-primary/20"
-              >
-                {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Sign In"}
-              </Button>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="signup" className="space-y-4 outline-none">
-            <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-              <div className="space-y-2">
-                <Label htmlFor="signup-email" className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">Email Address</Label>
                 <div className="relative group">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                   <Input 
@@ -123,29 +179,35 @@ export function AuthForm() {
                   />
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="signup-password" title="signup password"  className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">Create Password</Label>
-                <div className="relative group">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                  <Input 
-                    id="signup-password" 
-                    type="password" 
-                    placeholder="••••••••" 
-                    className="pl-10 h-11 bg-muted/30 border-border/50 focus:border-primary transition-all rounded-xl"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
+              
+              {authMethod === 'password' && (
+                <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
+                  <Label htmlFor="signup-password" title="signup password"  className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">Create Password</Label>
+                  <div className="relative group">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                    <Input 
+                      id="signup-password" 
+                      type="password" 
+                      placeholder="••••••••" 
+                      className="pl-10 h-11 bg-muted/30 border-border/50 focus:border-primary transition-all rounded-xl"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
+
               <Button 
                 onClick={() => handleEmailAuth('signup')}
-                disabled={isLoading || !email || !password}
+                disabled={isLoading || !email || (authMethod === 'password' && !password)}
                 className="w-full h-11 rounded-xl font-bold bg-foreground text-background hover:opacity-90 transition-all shadow-xl"
               >
                 {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : (
-                  <span className="flex items-center gap-2">
-                    Create Account <Sparkles className="w-4 h-4" />
-                  </span>
+                  authMethod === 'link' ? "Send Sign-In Link" : (
+                    <span className="flex items-center gap-2">
+                      Create Account <Sparkles className="w-4 h-4" />
+                    </span>
+                  )
                 )}
               </Button>
             </div>

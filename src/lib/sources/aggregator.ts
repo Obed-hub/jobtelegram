@@ -11,6 +11,7 @@ import { remoteokAdapter } from './remoteok';
 import { createGreenhouseAdapter, DEFAULT_GREENHOUSE_BOARDS } from './greenhouse';
 import { createLeverAdapter, DEFAULT_LEVER_BOARDS } from './lever';
 import { hackerNewsAdapter } from './hackerNews';
+import { weworkremotelyAdapter } from './weworkremotely';
 import { mockAdapter } from './mock';
 
 /** All enabled source adapters */
@@ -20,6 +21,7 @@ function getAllAdapters(): SourceAdapter[] {
     arbeitnowAdapter,
     remoteokAdapter,
     hackerNewsAdapter,
+    weworkremotelyAdapter,
   ];
 
   for (const board of DEFAULT_GREENHOUSE_BOARDS) {

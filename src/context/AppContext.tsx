@@ -8,7 +8,8 @@ import { normalizedToJob } from '@/lib/sources/bridge';
 import { auth, googleProvider, db } from '@/lib/firebase';
 import { 
   onAuthStateChanged, signInWithPopup, signOut, User, 
-  createUserWithEmailAndPassword, signInWithEmailAndPassword 
+  createUserWithEmailAndPassword, signInWithEmailAndPassword,
+  sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink
 } from 'firebase/auth';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { toast } from 'sonner';
@@ -19,6 +20,7 @@ interface AppState {
   loginWithGoogle: () => Promise<void>;
   loginWithEmail: (email: string, pass: string) => Promise<void>;
   signUpWithEmail: (email: string, pass: string) => Promise<void>;
+  sendPasswordlessLink: (email: string) => Promise<void>;
   logout: () => Promise<void>;
   profile: UserProfile | null;
   matchedJobs: MatchedJob[];
@@ -131,9 +133,68 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const syncJobs = useCallback(async () => {
+    setIsSyncing(true);
+    try {
+      const result: AggregationResult = await aggregateJobs({ 
+        useMockFallback: true,
+        profile: profile || undefined
+      });
+      const convertedJobs = result.jobs.map(normalizedToJob);
+      setJobPool(convertedJobs);
+      setSyncLogs(result.syncLogs);
+      setTotalFetched(result.totalFetched);
+      setDuplicatesRemoved(result.duplicatesRemoved);
+
+      // Re-match if profile exists
+      if (profile) {
+        const matched = matchJobs(profile, convertedJobs);
+        // Initial filter by seenIds to avoid already viewed jobs on sync
+        const unseen = matched.filter(j => !seenIds.has(j.id));
+        setAllMatchedJobs(unseen);
+        setCurrentJobIndex(0);
+      }
+    } catch (err) {
+      console.error('[Sync] Failed:', err);
+    } finally {
+      setIsSyncing(false);
+    }
+  }, [profile, seenIds]);
+
+  // Use refs to keep listeners and intervals stable
+  const syncJobsRef = React.useRef(syncJobs);
+  const userRef = React.useRef(user);
+
+  React.useEffect(() => {
+    syncJobsRef.current = syncJobs;
+    userRef.current = user;
+  }, [syncJobs, user]);
+
   // Listen for auth changes AND assign random avatar
   React.useEffect(() => {
     // Auth & Data Persistence
+    // Handle Firebase Email Link (Passwordless) redirection
+    if (isSignInWithEmailLink(auth, window.location.href)) {
+      let email = window.localStorage.getItem('emailForSignIn');
+      
+      // Prompt user if email is missing (e.g. they opened the link on a different device)
+      if (!email) {
+        email = window.prompt('Please provide your email for confirmation');
+      }
+
+      if (email) {
+        signInWithEmailLink(auth, email, window.location.href)
+          .then(() => {
+            window.localStorage.removeItem('emailForSignIn');
+            toast.success('Successfully signed in with email link!');
+          })
+          .catch((error) => {
+            console.error('Email link sign-in error:', error);
+            toast.error('Failed to sign in with email link. The link may have expired.');
+          });
+      }
+    }
+
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       if (currentUser) {
@@ -156,7 +217,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
                   lastActivityDate: now
                 };
                 setProfileState(resetProfile);
-                persist(currentUser.uid, { profile: resetProfile });
+                 persist(currentUser.uid, { profile: resetProfile });
+                // Automatically sync fresh jobs on new day login
+                syncJobsRef.current();
               } else {
                 setProfileState(data.profile);
               }
@@ -187,7 +250,34 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setUserAvatarUrl(`/avatar/Number=${randomNum}.png`);
 
     return () => unsubscribe();
-  }, [persist]);
+  }, []); // Static registry - breakout of syncJobs update loop
+
+  // Background check for day change while app is open
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      const now = new Date().toDateString();
+      setProfileState(prev => {
+        if (prev && prev.lastActivityDate !== now) {
+          console.log('[App] Background day change detected! Refreshing limits and syncing jobs...');
+          const next = {
+            ...prev,
+            dailyJobsSwiped: 0,
+            dailyCvFits: 0,
+            dailyAiAnalysisCount: 0,
+            dailyInterviewCount: 0,
+            lastActivityDate: now
+          };
+          if (userRef.current) persist(userRef.current.uid, { profile: next });
+          // Background sync
+          syncJobsRef.current();
+          return next;
+        }
+        return prev;
+      });
+    }, 60000); // Check every minute
+
+    return () => clearInterval(interval);
+  }, []); // Stable background task
 
   const loginWithEmail = async (email: string, pass: string) => {
     try {
@@ -219,6 +309,26 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const sendPasswordlessLink = async (email: string) => {
+    const actionCodeSettings = {
+      // URL you want to redirect back to. The domain (www.example.com) for this
+      // URL must be whitelisted in the Firebase Console.
+      url: window.location.origin,
+      // This must be true.
+      handleCodeInApp: true,
+    };
+
+    try {
+      await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+      window.localStorage.setItem('emailForSignIn', email);
+      toast.success('Sign-in link sent to your email!');
+    } catch (error: any) {
+      console.error('Error sending link:', error);
+      toast.error(error.message || 'Failed to send sign-in link');
+      throw error;
+    }
+  };
+
   const logout = async () => {
     try {
       await signOut(auth);
@@ -229,33 +339,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const syncJobs = useCallback(async () => {
-    setIsSyncing(true);
-    try {
-      const result: AggregationResult = await aggregateJobs({ 
-        useMockFallback: true,
-        profile: profile || undefined
-      });
-      const convertedJobs = result.jobs.map(normalizedToJob);
-      setJobPool(convertedJobs);
-      setSyncLogs(result.syncLogs);
-      setTotalFetched(result.totalFetched);
-      setDuplicatesRemoved(result.duplicatesRemoved);
-
-      // Re-match if profile exists
-      if (profile) {
-        const matched = matchJobs(profile, convertedJobs);
-        // Initial filter by seenIds to avoid already viewed jobs on sync
-        const unseen = matched.filter(j => !seenIds.has(j.id));
-        setAllMatchedJobs(unseen);
-        setCurrentJobIndex(0);
-      }
-    } catch (err) {
-      console.error('[Sync] Failed:', err);
-    } finally {
-      setIsSyncing(false);
-    }
-  }, [profile, seenIds]);
+// syncJobs moved up
 
   // Automatically fetch jobs once on app mount
   React.useEffect(() => {
@@ -330,6 +414,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const updateUsage = useCallback((action: LimitAction) => {
     setProfileState(prev => {
       if (!prev) return prev;
+      if (prev.isPremium) return prev; // Premium users don't track limits
+
       const now = new Date().toDateString();
       const isNewDay = prev.lastActivityDate !== now;
       
@@ -341,18 +427,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
       };
 
       const key = keyMap[action];
-      const currentVal = isNewDay ? 1 : (Number(prev[key]) || 0) + 1;
       
       const next = { 
         ...prev, 
-        [key]: currentVal, 
         lastActivityDate: now,
         ...(isNewDay ? {
           dailyJobsSwiped: action === 'DAILY_SWIPES' ? 1 : 0,
           dailyCvFits: action === 'DAILY_CV_FITS' ? 1 : 0,
           dailyAiAnalysisCount: action === 'DAILY_AI_INSIGHTS' ? 1 : 0,
           dailyInterviewCount: action === 'DAILY_INTERVIEW_PREP' ? 1 : 0,
-        } : {})
+        } : {
+          [key]: (Number(prev[key]) || 0) + 1
+        })
       };
       
       if (user) persist(user.uid, { profile: next });
@@ -431,6 +517,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       loginWithGoogle,
       loginWithEmail,
       signUpWithEmail,
+      sendPasswordlessLink,
       logout,
       profile,
       matchedJobs: filteredJobs,
