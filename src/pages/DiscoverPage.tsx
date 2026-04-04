@@ -246,6 +246,11 @@ export default function DiscoverPage() {
       <div className="flex items-center justify-center gap-4 mt-4">
         <button
           onClick={() => {
+            if (!hasSwipedIntro) {
+              setHasSwipedIntro(true);
+              sessionStorage.setItem('gigspark_intro_swiped', 'true');
+              return;
+            }
             handleSwipeCheck(() => {
               recordFeedback(currentJob.id, 'skipped');
               skipJob();
@@ -257,13 +262,21 @@ export default function DiscoverPage() {
           <X className="w-5 h-5 text-muted-foreground" />
         </button>
         <button
-          onClick={() => navigate(`/job/${currentJob.id}`)}
+          onClick={() => {
+            if (!hasSwipedIntro) {
+              setHasSwipedIntro(true);
+              sessionStorage.setItem('gigspark_intro_swiped', 'true');
+              return;
+            }
+            navigate(`/job/${currentJob.id}`);
+          }}
           className="w-10 h-10 rounded-full bg-muted border border-border flex items-center justify-center hover:bg-accent/10 hover:border-accent/30 transition-colors"
         >
           <ExternalLink className="w-4 h-4 text-muted-foreground" />
         </button>
         <button
           onClick={() => {
+            if (!hasSwipedIntro) return; // Share doesn't make sense for intro
             const shareData = {
               title: currentJob.title,
               text: `Check out this job: ${currentJob.title} at ${currentJob.company}`,
@@ -282,6 +295,12 @@ export default function DiscoverPage() {
         </button>
         <button
           onClick={() => {
+            if (!hasSwipedIntro) {
+              setHasSwipedIntro(true);
+              sessionStorage.setItem('gigspark_intro_swiped', 'true');
+              toast.success('Search started!', { icon: <Sparkles className="w-4 h-4 text-primary" /> });
+              return;
+            }
             handleSwipeCheck(() => {
               recordFeedback(currentJob.id, 'relevant');
               saveJob(currentJob);

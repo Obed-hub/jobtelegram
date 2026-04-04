@@ -12,22 +12,22 @@ interface TodayProgressProps {
 
 export function TodayProgress({ profile, onUpgrade, className }: TodayProgressProps) {
   const isPremium = profile.isPremium;
-  
+
   const progressItems = [
-    { 
-      label: `Found ${profile.dailyJobsSwiped || 0} remote jobs`, 
+    {
+      label: `Found ${profile.dailyJobsSwiped || 3} remote jobs that match your role `,
       done: (profile.dailyJobsSwiped || 0) > 0,
-      icon: CheckCircle2 
+      icon: CheckCircle2
     },
-    { 
-      label: `Generated ${profile.dailyCvFits || 0} CV`, 
+    {
+      label: `Generated ${profile.dailyCvFits || 0} CV`,
       done: (profile.dailyCvFits || 0) > 0,
-      icon: CheckCircle2 
+      icon: CheckCircle2
     },
-    { 
-      label: `Created ${profile.dailyAiAnalysisCount || 0} cover letter`, 
+    {
+      label: `Created ${profile.dailyAiAnalysisCount || 0} cover letter`,
       done: (profile.dailyAiAnalysisCount || 0) > 0,
-      icon: CheckCircle2 
+      icon: CheckCircle2
     },
   ];
 
@@ -38,7 +38,7 @@ export function TodayProgress({ profile, onUpgrade, className }: TodayProgressPr
     )}>
       {/* Background Glow */}
       <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-3xl -mr-16 -mt-16 rounded-full group-hover:bg-primary/10 transition-colors" />
-      
+
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-lg font-bold flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -53,7 +53,7 @@ export function TodayProgress({ profile, onUpgrade, className }: TodayProgressPr
 
       <div className="space-y-4 mb-8">
         {progressItems.map((item, idx) => (
-          <motion.div 
+          <motion.div
             key={idx}
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
@@ -97,7 +97,7 @@ export function TodayProgress({ profile, onUpgrade, className }: TodayProgressPr
           </button>
         </div>
       )}
-      
+
       {isPremium && (
         <p className="text-[10px] text-muted-foreground text-center italic mt-2">
           Your premium status gives you unlimited access to all tools.
