@@ -88,8 +88,7 @@ export function createLeverAdapter(companySlugParam: string, companyName: string
           `/api/lever/v0/postings/${companySlugParam}?mode=json`
         );
         if (res.status === 404 || res.status === 403) {
-          // Some boards are private
-          console.warn(`[Lever/${companySlugParam}] Board is private or not found (Status: ${res.status})`);
+          // Silent skip for private/stale boards to reduce console noise
           return [];
         }
         if (!res.ok) throw new Error(`Lever API error for ${companySlugParam}: ${res.status}`);
@@ -108,58 +107,13 @@ export function createLeverAdapter(companySlugParam: string, companyName: string
 export const DEFAULT_LEVER_BOARDS = [
   // --- Big Tech & Platforms ---
   { slug: 'atlassian', name: 'Atlassian' },
-  { slug: 'digitalocean', name: 'DigitalOcean' },
-  { slug: 'yelp', name: 'Yelp' },
-  { slug: 'circleci', name: 'CircleCI' },
-  { slug: 'mongodb', name: 'MongoDB' },
-  { slug: 'elastic', name: 'Elastic' },
-  { slug: 'heroku', name: 'Heroku' },
-  { slug: 'postman', name: 'Postman' },
-  { slug: 'gitlab', name: 'GitLab' },
-  { slug: 'zapier', name: 'Zapier' },
-  { slug: 'cloudflare', name: 'Cloudflare' },
-  { slug: 'okta', name: 'Okta' },
-  { slug: 'unity', name: 'Unity' },
-  { slug: 'vimeo', name: 'Vimeo' },
   { slug: 'palantir', name: 'Palantir' },
-  { slug: 'plaid', name: 'Plaid' }, // Verified on Lever
-
-  // --- Startups & SaaS ---
-  { slug: 'brex', name: 'Brex' },
-  { slug: 'ramp', name: 'Ramp' },
-  { slug: 'flexport', name: 'Flexport' },
-  { slug: 'rippling', name: 'Rippling' },
-  { slug: 'benchling', name: 'Benchling' },
-  { slug: 'figma', name: 'Figma' },
-  { slug: 'canva', name: 'Canva' },
-  { slug: 'intercom', name: 'Intercom' },
-  { slug: 'gusto', name: 'Gusto' },
-  { slug: 'loom', name: 'Loom' },
-  { slug: 'retool', name: 'Retool' },
-
-  // --- Dev Tools & Infra ---
-  { slug: 'pulumi', name: 'Pulumi' },
-  { slug: 'temporal', name: 'Temporal' },
-  { slug: 'supabase', name: 'Supabase' },
-  { slug: 'planetscale', name: 'PlanetScale' },
-  { slug: 'render', name: 'Render' },
-  { slug: 'railway', name: 'Railway' },
-  { slug: 'flyio', name: 'Fly.io' },
-  { slug: 'vercel', name: 'Vercel' },
-  { slug: 'netlify', name: 'Netlify' },
-
-  // --- AI & Data ---
-  { slug: 'scaleai', name: 'Scale AI' },
-  { slug: 'weightsbiases', name: 'Weights & Biases' },
-  { slug: 'huggingface', name: 'Hugging Face' },
-  { slug: 'stabilityai', name: 'Stability AI' },
-  { slug: 'cohere', name: 'Cohere' },
-  { slug: 'anthropic', name: 'Anthropic' },
-
-  // --- Misc High-Growth ---
-  { slug: 'chime', name: 'Chime' },
-  { slug: 'klarna', name: 'Klarna' },
-  { slug: 'wise', name: 'Wise' },
-  { slug: 'checkout', name: 'Checkout.com' },
-  { slug: 'toast', name: 'Toast' },
+  { slug: 'plaid', name: 'Plaid' },
+  { slug: 'netflix', name: 'Netflix' },
+  { slug: 'twitch', name: 'Twitch' },
+  { slug: 'robinhood', name: 'Robinhood' },
+  { slug: 'lyft', name: 'Lyft' },
+  { slug: 'doordash', name: 'DoorDash' },
+  { slug: 'instacart', name: 'Instacart' },
+  { slug: 'cruise', name: 'Cruise' },
 ];

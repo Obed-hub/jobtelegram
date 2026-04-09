@@ -62,9 +62,6 @@ export default function JobDetailsPage() {
 
   useEffect(() => {
     if (job && profile && !job.aiInsight && !dynamicInsight && !isLoadingInsight) {
-      if (checkLimit('DAILY_AI_INSIGHTS')) {
-        return;
-      }
       setIsLoadingInsight(true);
       generateJobAnalysis(job, profile)
         .then(res => {
@@ -94,11 +91,6 @@ export default function JobDetailsPage() {
         setIsGenerating(false);
         return;
       } else if (toolId === 'interview' || toolId === 'qa') {
-        if (checkLimit('DAILY_INTERVIEW_PREP')) {
-          setUpgradeReason('cv');
-          setShowUpgradeModal(true);
-          return;
-        }
         result = await generateInterviewPrep(job, profile);
         incrementDailyInterviewPrep();
       }

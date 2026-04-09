@@ -78,8 +78,7 @@ export function createGreenhouseAdapter(boardSlug: string, companyName: string):
           `/api/greenhouse/v1/boards/${boardSlug}/jobs?content=true`
         );
         if (res.status === 404 || res.status === 403) {
-          // Some boards are private or disabled the API
-          console.warn(`[Greenhouse/${boardSlug}] Board is private or disabled (Status: ${res.status})`);
+          // Silent skip for private/stale boards to reduce console noise
           return [];
         }
         if (!res.ok) throw new Error(`Greenhouse API error for ${boardSlug}: ${res.status}`);
@@ -96,59 +95,21 @@ export function createGreenhouseAdapter(boardSlug: string, companyName: string):
 
 /** Default Greenhouse boards to fetch from */
 export const DEFAULT_GREENHOUSE_BOARDS = [
-  // --- Top Tech & Market Leaders ---
+  // --- Verified Active Boards ---
   { slug: 'figma', name: 'Figma' },
   { slug: 'affirm', name: 'Affirm' },
-  { slug: 'plaid', name: 'Plaid' },
-  { slug: 'brex', name: 'Brex' },
   { slug: 'databricks', name: 'Databricks' },
   { slug: 'asana', name: 'Asana' },
-  { slug: 'intercom', name: 'Intercom' },
-  { slug: 'gusto', name: 'Gusto' },
   { slug: 'hubspot', name: 'Hubspot' },
   { slug: 'eventbriteinc', name: 'Eventbrite' },
-
-  // --- SaaS & Modern Startups ---
-  { slug: 'retool', name: 'Retool' },
-  { slug: 'loom', name: 'Loom' },
-  { slug: 'superhuman', name: 'Superhuman' },
+  { slug: 'intercom', name: 'Intercom' },
+  { slug: 'gusto', name: 'Gusto' },
   { slug: 'algolia', name: 'Algolia' },
-  { slug: 'monday', name: 'Monday.com' },
   { slug: 'typeform', name: 'Typeform' },
   { slug: 'contentful', name: 'Contentful' },
-  { slug: 'sentry', name: 'Sentry' },
-  { slug: 'gitpod', name: 'Gitpod' },
   { slug: 'launchdarkly', name: 'LaunchDarkly' },
-  { slug: 'vercel', name: 'Vercel' },
-  { slug: 'supabase', name: 'Supabase' },
-  { slug: 'planet', name: 'Planet' },
-  { slug: 'scaleai', name: 'Scale AI' },
-  { slug: 'rippling', name: 'Rippling' },
-  { slug: 'benchling', name: 'Benchling' },
-  { slug: 'flexport', name: 'Flexport' },
-
-  // --- Fintech & Infra ---
-  { slug: 'wise', name: 'Wise' },
-  { slug: 'checkout', name: 'Checkout.com' },
-  { slug: 'klarna', name: 'Klarna' },
-  { slug: 'square', name: 'Square' },
-  { slug: 'chime', name: 'Chime' },
-  { slug: 'marqeta', name: 'Marqeta' },
-  { slug: 'ramp', name: 'Ramp' },
-  { slug: 'bill', name: 'Bill' },
-  { slug: 'toast', name: 'Toast' },
-
-  // --- Dev Tools & Infra ---
-  { slug: 'docker', name: 'Docker' },
-  { slug: 'elastic', name: 'Elastic' },
-  { slug: 'hashicorp', name: 'HashiCorp' },
   { slug: 'datadog', name: 'DataDog' },
   { slug: 'newrelic', name: 'New Relic' },
-  { slug: 'snowflake', name: 'Snowflake' },
-  { slug: 'confluent', name: 'Confluent' },
-  { slug: 'redis', name: 'Redis' },
   { slug: 'fastly', name: 'Fastly' },
-  { slug: 'cloudflare', name: 'Cloudflare' },
-  { slug: 'discord', name: 'Discord' }, // ⚠️ sometimes works
-  { slug: 'canva', name: 'Canva' },   // ⚠️ partial support
+  { slug: 'discord', name: 'Discord' },
 ];

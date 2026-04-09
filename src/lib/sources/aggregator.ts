@@ -103,6 +103,14 @@ export async function aggregateJobs(
     }
   }
 
+  // Log summary of the sync process
+  const activeSources = syncLogs.filter(l => l.jobs_fetched > 0);
+  if (allJobs.length > 0) {
+    console.info(`[Aggregator] Sync complete: ${allJobs.length} jobs fetched from ${activeSources.length}/${adapters.length} configured sources.`);
+  } else {
+    console.warn(`[Aggregator] Sync finished with 0 jobs from ${adapters.length} sources.`);
+  }
+
   // Fallback to mock if nothing came through
   if (allJobs.length === 0 && useMockFallback) {
     const hasErrors = syncLogs.some(log => log.errors.length > 0);

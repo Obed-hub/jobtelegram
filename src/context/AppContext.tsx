@@ -481,14 +481,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     ? availableJobs.filter(isHighSignal)
     : availableJobs;
 
-  // New: Separate job matches by tier
-  const filteredJobs = baseFilteredJobs.filter(job => {
-    if (profile?.isPremium) {
-      return job.matchScore >= 50;
-    } else {
-      return job.matchScore < 50;
-    }
-  });
+  // All users see high quality matches (score >= 50)
+  const filteredJobs = baseFilteredJobs.filter(job => job.matchScore >= 50);
 
   const updateUsage = useCallback((action: LimitAction) => {
     setProfileState(prev => {
@@ -545,7 +539,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       DAILY_INTERVIEW_PREP: profile.dailyInterviewCount || 0,
     }[action] || 0;
 
-    return currentUsage >= LIMITS.FREE[action];
+    const limits = LIMITS.FREE as Record<LimitAction, number>;
+    return currentUsage >= limits[action];
   }, [profile]);
 
   const upgradeToPremium = useCallback(() => {

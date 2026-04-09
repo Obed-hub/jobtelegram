@@ -15,10 +15,8 @@ export function TodayProgress({ profile, onUpgrade, className }: TodayProgressPr
 
   const progressItems = [
     {
-      label: isPremium 
-        ? `Found 20+ remote jobs that match your role `
-        : `Found ${profile.dailyJobsSwiped || 3} remote jobs that match your role `,
-      done: isPremium || (profile.dailyJobsSwiped || 0) > 0,
+      label: `Unlimited job matches for your role`,
+      done: true,
       icon: CheckCircle2
     },
     {
@@ -29,10 +27,8 @@ export function TodayProgress({ profile, onUpgrade, className }: TodayProgressPr
       icon: CheckCircle2
     },
     {
-      label: isPremium
-        ? `Unlimited cover letters`
-        : `Created ${profile.dailyAiAnalysisCount || 0} cover letter`,
-      done: isPremium || (profile.dailyAiAnalysisCount || 0) > 0,
+      label: `Unlimited AI cover letters`,
+      done: true,
       icon: CheckCircle2
     },
   ];
@@ -88,11 +84,11 @@ export function TodayProgress({ profile, onUpgrade, className }: TodayProgressPr
           <div className="space-y-2 mb-5">
             <div className="flex items-center gap-2 text-[13px] text-muted-foreground group/item hover:text-primary transition-colors px-1">
               <ArrowRight className="w-3.5 h-3.5 text-primary" />
-              <span>50+ jobs daily</span>
+              <span>Unlimited CV tailoring</span>
             </div>
             <div className="flex items-center gap-2 text-[13px] text-muted-foreground group/item hover:text-primary transition-colors px-1">
               <ArrowRight className="w-3.5 h-3.5 text-primary" />
-              <span>Unlimited CV optimization</span>
+              <span>High-signal USD/GBP filter</span>
             </div>
           </div>
           <button

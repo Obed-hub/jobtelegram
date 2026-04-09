@@ -37,7 +37,7 @@ export function UpgradeModal({ isOpen, onOpenChange, reason }: UpgradeModalProps
     },
     customizations: {
       title: 'GigSpark Premium',
-      description: 'Unlock Unlimited Swipes & AI Tailoring',
+      description: 'Unlock Unlimited CV Fits & Premium Filters',
       logo: 'https://st2.depositphotos.com/6789684/12262/v/450/depositphotos_122620864-stock-illustration-illustration-of-flat-icon.jpg',
     },
   };
@@ -96,7 +96,7 @@ export function UpgradeModal({ isOpen, onOpenChange, reason }: UpgradeModalProps
                 <Lock className="w-8 h-8 text-white" />
               </div>
               <DialogTitle className="text-2xl font-bold">
-                {reason === 'jobs' ? "You've hit your daily limit!" : reason === 'cv' ? "AI Magic Limit Reached!" : reason === 'networks' ? "Exclusive Network Access!" : "Upgrade to Premium"}
+                {reason === 'jobs' ? "Precision Matching Unlocked!" : reason === 'cv' ? "AI Magic Limit Reached!" : reason === 'networks' ? "Exclusive Network Access!" : "Upgrade to Premium"}
               </DialogTitle>
               <DialogDescription className="text-base mt-2">
                 Get the ultimate job search advantage with our Premium membership.
@@ -107,8 +107,8 @@ export function UpgradeModal({ isOpen, onOpenChange, reason }: UpgradeModalProps
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="w-5 h-5 text-success shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-semibold">Unlimited Job Discovery</p>
-                  <p className="text-sm text-muted-foreground">Keep swiping without being capped at 3 jobs/day.</p>
+                  <p className="font-semibold">Unlimited Premium Feed</p>
+                  <p className="text-sm text-muted-foreground">Keep discovering high-quality matches tailored with precision.</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">

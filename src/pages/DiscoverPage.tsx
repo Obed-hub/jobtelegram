@@ -41,16 +41,10 @@ export default function DiscoverPage() {
   });
 
   const handleSwipeCheck = (action: () => void) => {
-    if (checkLimit('DAILY_SWIPES')) {
-      setUpgradeReason('jobs');
-      setShowUpgradeModal(true);
-      return;
-    }
     incrementDailySwipes();
     action();
   };
 
-  const isLimitReached = checkLimit('DAILY_SWIPES');
 
   if (!profileComplete) {
     return (
@@ -81,7 +75,7 @@ export default function DiscoverPage() {
     );
   }
 
-  if (!currentJob || isLimitReached) {
+  if (!currentJob) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[80vh] px-4">
         <motion.div 
@@ -96,15 +90,9 @@ export default function DiscoverPage() {
             )}
           </div>
           <h2 className="text-xl font-bold mb-3">You're all caught up!</h2>
-          {checkLimit('DAILY_SWIPES') ? (
-            <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
-              You've hit your free limit of <strong>{LIMITS.FREE.DAILY_SWIPES} matches</strong> for today. <br/>Come back tomorrow or upgrade for unlimited searching!
-            </p>
-          ) : (
-            <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
-              We've searched all our sources and didn't find any more matches for your current profile. New jobs are added throughout the day!
-            </p>
-          )}
+          <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
+            We've searched all our sources and didn't find any more matches for your current profile. New jobs are added throughout the day!
+          </p>
           <div className="flex flex-col gap-3">
             <button 
               onClick={syncJobs}
